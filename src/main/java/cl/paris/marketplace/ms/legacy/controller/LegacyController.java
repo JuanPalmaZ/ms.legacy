@@ -18,9 +18,15 @@ import cl.paris.marketplace.ms.legacy.dto.LegacySyncRequest;
 import cl.paris.marketplace.ms.legacy.service.LegacyService;
 import jakarta.validation.Valid;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+
 @RestController
 @RequestMapping("/api/legacy")
-// QUITAMOS el @PreAuthorize de aquí arriba para poder controlar ruta por ruta
+@Tag(name = "Legacy", description = "Endpoints para la sincronización y consulta de datos del ERP heredado")
 public class LegacyController {
 
     private final LegacyService legacyService;
@@ -29,13 +35,23 @@ public class LegacyController {
         this.legacyService = legacyService;
     }
 
-    // Esta ruta queda abierta al público en SecurityConfig, pero protegida por un Header secreto
+    @Operation(summary = "Sincroniza un dato antiguo del sistema ERP")
+    @ApiResponse(responseCode = "201", description = "Sincronización exitosa y registro creado")
+    @ApiResponse(responseCode = "403", description = "Acceso denegado: Llave de sistema inválida o ausente")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        description = "Payload con los datos migrados del ERP",
+        content = @Content(
+            examples = @ExampleObject(
+                name = "EjemploLegacySync",
+                value = "{\n  \"tipoEntidad\": \"PRODUCTO\",\n  \"codigoAntiguo\": \"PRD-1029\",\n  \"datosMigrados\": \"{\\\"nombre\\\": \\\"Zapatillas\\\", \\\"precio\\\": 45000}\"\n}"
+            )
+        )
+    )
     @PostMapping("/sincronizar")
     public ResponseEntity<?> sincronizarDatoAntiguo(
             @RequestHeader(value = "X-Internal-Secret", required = false) String secret,
             @Valid @RequestBody LegacySyncRequest request) {
         
-        // Verificamos que la petición venga de ms-usuarios y no de un atacante externo
         if (!"paris-legacy-secret-2026".equals(secret)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body("Acceso denegado: Llave de sistema inválida o ausente.");
@@ -45,13 +61,16 @@ public class LegacyController {
         return new ResponseEntity<>(response, HttpStatus.CREATED); 
     }
 
-    // Protegemos individualmente las rutas de lectura para que solo entren administradores logeados
+    @Operation(summary = "Obtiene el historial completo de sincronizaciones")
+    @ApiResponse(responseCode = "200", description = "Historial listado exitosamente")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/historial")
     public ResponseEntity<List<LegacyRecordResponse>> listarHistorialSincronizaciones() {
         return ResponseEntity.ok(legacyService.listarHistorialSincronizaciones());
     }
 
+    @Operation(summary = "Filtra el historial de sincronizaciones según el tipo de entidad (PRODUCTO/CLIENTE/STOCK)")
+    @ApiResponse(responseCode = "200", description = "Registros obtenidos exitosamente para la entidad solicitada")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/entidad/{tipoEntidad}")
     public ResponseEntity<List<LegacyRecordResponse>> listarPorTipoEntidad(@PathVariable String tipoEntidad) {

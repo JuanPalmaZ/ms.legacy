@@ -1,5 +1,5 @@
 server:
-  port: 8090 # Puerto asignado exclusivamente para legacy
+  port: ${PORT:8090} # Puerto asignado exclusivamente para legacy
 
 spring:
   application:
@@ -45,12 +45,22 @@ spring:
 # ===================================
 eureka:
   client:
-    register-with-eureka: true # Se registra en el servidor central de Juan
-    fetch-registry: true   # Descarga la lista de los otros servicios (clientes, usuarios, productos)
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/ # Dirección del servidor Eureka
+      defaultZone: https://eureka-server-wp64.onrender.com/eureka/
+
   instance:
-    prefer-ip-address: true # Facilita la comunicación interna mediante IP
+    prefer-ip-address: false
+    hostname: ${RENDER_EXTERNAL_HOSTNAME:localhost}
+
+    secure-port-enabled: true
+    secure-port: 443
+    non-secure-port-enabled: false
+
+    home-page-url: https://${RENDER_EXTERNAL_HOSTNAME}/
+    status-page-url: https://${RENDER_EXTERNAL_HOSTNAME}/actuator/info
+    health-check-url: https://${RENDER_EXTERNAL_HOSTNAME}/actuator/health
 
 jwt:
   # Esta es la misma clave secreta de tu ecosistema para poder validar los tokens del Gateway
