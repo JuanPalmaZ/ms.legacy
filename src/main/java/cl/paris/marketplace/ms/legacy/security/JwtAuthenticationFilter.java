@@ -73,4 +73,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         filterChain.doFilter(request, response);
     }
+    @Override
+protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    String path = request.getServletPath();
+    // Lista de rutas que el filtro JWT debe ignorar por completo
+    return path.startsWith("/v3/api-docs") || 
+           path.startsWith("/swagger-ui") || 
+           path.startsWith("/doc/swagger-ui") ||
+           path.startsWith("/api/legacy/sincronizar"); // Tu endpoint público
+}
 }
