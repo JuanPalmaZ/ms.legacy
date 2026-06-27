@@ -1,5 +1,5 @@
 package cl.paris.marketplace.ms.legacy.security;
- 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,33 +10,44 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
- 
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity 
 public class SecurityConfig {
- 
+
     private final JwtAuthenticationFilter jwtAuthFilter;
- 
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
- 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // 1. ABRIMOS LA PUERTA: Dejamos pasar los POST a sincronizar sin pedir Token JWT
+                // 1. ABRIMOS LA PUERTA AL ENDPOINT POST: Sin pedir Token JWT
                 .requestMatchers(HttpMethod.POST, "/api/legacy/sincronizar").permitAll()
-                // 2. CERRAMOS EL RESTO: Todo lo demás requiere estar autenticado
+                
+                // 2. ABRIMOS LA PUERTA A SWAGGER: Sin restricción de método (necesita GET)
+                .requestMatchers(
+                        "/doc/swagger-ui/**",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/doc/swagger-ui.html/**"
+                ).permitAll()
+                
+                // 3. CERRAMOS EL RESTO: Todo lo demás requiere estar autenticado
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
- 
+
         return http.build();
     }
 }
