@@ -23,17 +23,7 @@ spring:
     url: jdbc:postgresql://ep-sweet-voice-ac645qo3-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
     username: neondb_owner
     password: npg_rfs10SMuCKcF
-# ===================================
-# Swagger
-# ===================================
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-    path: /doc/swagger-ui.html
     driver-class-name: org.postgresql.Driver
-    
     hikari:
       maximum-pool-size: 5
 
@@ -50,6 +40,16 @@ springdoc:
         format_sql: true # Formatea el SQL para que sea legible
 
 # ===================================
+# Swagger / Springdoc
+# ===================================
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /doc/swagger-ui.html
+
+# ===================================
 # Configuración del Cliente Eureka
 # ===================================
 eureka:
@@ -62,15 +62,16 @@ eureka:
   instance:
     prefer-ip-address: false
     hostname: ${RENDER_EXTERNAL_HOSTNAME:localhost}
-
     secure-port-enabled: true
     secure-port: 443
     non-secure-port-enabled: false
-
     home-page-url: https://${RENDER_EXTERNAL_HOSTNAME}/
     status-page-url: https://${RENDER_EXTERNAL_HOSTNAME}/actuator/info
     health-check-url: https://${RENDER_EXTERNAL_HOSTNAME}/actuator/health
 
+# ===================================
+# Configuración JWT
+# ===================================
 jwt:
   # Esta es la misma clave secreta de tu ecosistema para poder validar los tokens del Gateway
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
