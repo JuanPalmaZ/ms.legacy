@@ -23,6 +23,15 @@ spring:
     url: jdbc:postgresql://ep-sweet-voice-ac645qo3-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
     username: neondb_owner
     password: npg_rfs10SMuCKcF
+# ===================================
+# Swagger
+# ===================================
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /doc/swagger-ui.html
     driver-class-name: org.postgresql.Driver
     
     hikari:
